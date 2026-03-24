@@ -1,0 +1,7 @@
+Monday|Oatmeal,Oatmeal,Oatmeal
+Tuesday|Oatmeal,Oatmeal,Oatmeal
+Wednesday|Oatmeal,Oatmeal,Oatmeal
+Thursday|Oatmeal,Oatmeal,Oatmeal
+Friday|Oatmeal,Oatmeal,Oatmeal
+Saturday|Oatmeal,Oatmeal,Oatmeal
+Sunday|Oatmeal,Oatmeal,Oatmeal
