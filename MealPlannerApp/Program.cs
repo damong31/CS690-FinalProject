@@ -856,7 +856,7 @@ namespace MealPlannerApp
     {
         public static readonly string[] DaysOfWeek =
         {
-            "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+           "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
         };
 
         public Dictionary<string, List<Recipe>> Meals { get; set; }
