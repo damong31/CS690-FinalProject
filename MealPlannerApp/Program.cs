@@ -120,7 +120,7 @@ namespace MealPlannerApp
                             int.Parse(lines[4])
                         );
 
-                        Console.WriteLine("Profile loaded from file.");
+                        Console.WriteLine("Profile loaded.");
                         return;
                     }
                 }
