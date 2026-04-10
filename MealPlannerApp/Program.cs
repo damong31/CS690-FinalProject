@@ -36,6 +36,7 @@ namespace MealPlannerApp
             while (running)
             {
                 Console.WriteLine($"\n---- Welcome, {_userProfile.Name}! ----");
+                Console.WriteLine($"Current Day: {_userProfile.CurrentDay}");
                 Console.WriteLine("1. View User Macro Goals");
                 Console.WriteLine("2. Add Daily Food Entry");
                 Console.WriteLine("3. View Daily Macro Summary");
@@ -48,7 +49,9 @@ namespace MealPlannerApp
                 Console.WriteLine("10. View Weekly Meal Plan");
                 Console.WriteLine("11. Generate Grocery List");
                 Console.WriteLine("12. Update Profile");
-                Console.WriteLine("13. Exit");
+                Console.WriteLine("13. Set Current Day");
+                Console.WriteLine("14. View Current Day Meal Plan");
+                Console.WriteLine("15. Exit");
                 Console.Write("Choose an option: ");
 
                 string? input = Console.ReadLine();
@@ -92,6 +95,12 @@ namespace MealPlannerApp
                         UpdateUserProfile();
                         break;
                     case "13":
+                        SetCurrentDay();
+                        break;
+                    case "14":
+                        ViewCurrentDayMealPlan();
+                        break;
+                    case "15":
                         running = false;
                         Console.WriteLine("Goodbye!");
                         break;
@@ -110,16 +119,32 @@ namespace MealPlannerApp
                 {
                     string[] lines = File.ReadAllLines(_profileFilePath);
 
-                    if (lines.Length >= 5)
+                    if (lines.Length >= 6)
                     {
                         _userProfile = new UserProfile(
                             lines[0],
                             int.Parse(lines[1]),
                             int.Parse(lines[2]),
                             int.Parse(lines[3]),
-                            int.Parse(lines[4])
+                            int.Parse(lines[4]),
+                            lines[5]
                         );
 
+                        Console.WriteLine("Profile loaded.");
+                        return;
+                    }
+                    else if (lines.Length >= 5)
+                    {
+                        _userProfile = new UserProfile(
+                            lines[0],
+                            int.Parse(lines[1]),
+                            int.Parse(lines[2]),
+                            int.Parse(lines[3]),
+                            int.Parse(lines[4]),
+                            "Monday"
+                        );
+
+                        SaveUserProfile();
                         Console.WriteLine("Profile loaded.");
                         return;
                     }
@@ -149,7 +174,7 @@ namespace MealPlannerApp
             int carbs = ReadInt("Carbs: ");
             int fat = ReadInt("Fat: ");
 
-            _userProfile = new UserProfile(name, calories, protein, carbs, fat);
+            _userProfile = new UserProfile(name, calories, protein, carbs, fat, "Monday");
             Console.WriteLine("Profile created.");
         }
 
@@ -161,7 +186,8 @@ namespace MealPlannerApp
                 _userProfile.CalorieGoal.ToString(),
                 _userProfile.ProteinGoal.ToString(),
                 _userProfile.CarbGoal.ToString(),
-                _userProfile.FatGoal.ToString()
+                _userProfile.FatGoal.ToString(),
+                _userProfile.CurrentDay
             });
         }
 
@@ -196,6 +222,64 @@ namespace MealPlannerApp
 
             SaveUserProfile();
             Console.WriteLine("Profile updated.");
+        }
+
+        private void SetCurrentDay()
+        {
+            Console.WriteLine("\n---- Set Current Day ----");
+
+            for (int i = 0; i < WeeklyMealPlan.DaysOfWeek.Length; i++)
+            {
+                Console.WriteLine($"{i + 1}. {WeeklyMealPlan.DaysOfWeek[i]}");
+            }
+
+            int choice = ReadInt("Choose the current day: ");
+
+            if (choice < 1 || choice > WeeklyMealPlan.DaysOfWeek.Length)
+            {
+                Console.WriteLine("Invalid day choice.");
+                return;
+            }
+
+            _userProfile.CurrentDay = WeeklyMealPlan.DaysOfWeek[choice - 1];
+            SaveUserProfile();
+
+            Console.WriteLine($"Current day set to {_userProfile.CurrentDay}.");
+        }
+
+        private void ViewCurrentDayMealPlan()
+        {
+            Console.WriteLine($"\n---- Meal Plan For {_userProfile.CurrentDay} ----");
+
+            List<Recipe> meals = _weeklyMealPlan.GetMeals(_userProfile.CurrentDay);
+
+            if (!meals.Any())
+            {
+                Console.WriteLine("No meals planned for this day.");
+                return;
+            }
+
+            int totalCalories = 0;
+            int totalProtein = 0;
+            int totalCarbs = 0;
+            int totalFat = 0;
+
+            for (int i = 0; i < meals.Count; i++)
+            {
+                Recipe recipe = meals[i];
+                Console.WriteLine($"Meal {i + 1}: {recipe.Name} [{recipe.Category}] - {recipe.Calories} Calories, Protein:{recipe.Protein} Carbs:{recipe.Carbs} Fats:{recipe.Fat}");
+
+                totalCalories += recipe.Calories;
+                totalProtein += recipe.Protein;
+                totalCarbs += recipe.Carbs;
+                totalFat += recipe.Fat;
+            }
+
+            Console.WriteLine("\nTotals for the day:");
+            Console.WriteLine($"Calories: {totalCalories}");
+            Console.WriteLine($"Protein: {totalProtein}");
+            Console.WriteLine($"Carbs: {totalCarbs}");
+            Console.WriteLine($"Fats: {totalFat}");
         }
 
         private void LoadRecipes()
@@ -703,6 +787,7 @@ namespace MealPlannerApp
         {
             Console.WriteLine("\n---- User Goals ----");
             Console.WriteLine($"Name: {_userProfile.Name}");
+            Console.WriteLine($"Current Day: {_userProfile.CurrentDay}");
             Console.WriteLine($"Calories: {_userProfile.CalorieGoal}");
             Console.WriteLine($"Protein: {_userProfile.ProteinGoal}");
             Console.WriteLine($"Carbs: {_userProfile.CarbGoal}");
@@ -789,14 +874,16 @@ namespace MealPlannerApp
         public int ProteinGoal { get; set; }
         public int CarbGoal { get; set; }
         public int FatGoal { get; set; }
+        public string CurrentDay { get; set; }
 
-        public UserProfile(string n, int c, int p, int cb, int f)
+        public UserProfile(string n, int c, int p, int cb, int f, string currentDay)
         {
             Name = n;
             CalorieGoal = c;
             ProteinGoal = p;
             CarbGoal = cb;
             FatGoal = f;
+            CurrentDay = currentDay;
         }
     }
 
@@ -856,7 +943,7 @@ namespace MealPlannerApp
     {
         public static readonly string[] DaysOfWeek =
         {
-           "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+            "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
         };
 
         public Dictionary<string, List<Recipe>> Meals { get; set; }

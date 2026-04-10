@@ -1,0 +1,15 @@
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/MealPlannerApp
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/MealPlannerApp.deps.json
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/MealPlannerApp.runtimeconfig.json
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/MealPlannerApp.dll
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/MealPlannerApp.pdb
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/MealPlannerApp.GeneratedMSBuildEditorConfig.editorconfig
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/MealPlannerApp.AssemblyInfoInputs.cache
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/MealPlannerApp.AssemblyInfo.cs
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/MealPlannerApp.csproj.CoreCompileInputs.cache
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/MealPlannerApp.sourcelink.json
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/MealPlannerApp.dll
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/refint/MealPlannerApp.dll
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/MealPlannerApp.pdb
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/MealPlannerApp.genruntimeconfig.cache
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Release/net10.0/ref/MealPlannerApp.dll

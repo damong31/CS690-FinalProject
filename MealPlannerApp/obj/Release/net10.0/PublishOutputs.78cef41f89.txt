@@ -1,0 +1,5 @@
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/publish/MealPlannerApp
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/publish/MealPlannerApp.dll
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/publish/MealPlannerApp.deps.json
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/publish/MealPlannerApp.runtimeconfig.json
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Release/net10.0/publish/MealPlannerApp.pdb

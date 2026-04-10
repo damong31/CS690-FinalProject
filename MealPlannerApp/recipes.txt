@@ -1,1 +1,3 @@
-Oatmeal|150|3|5|3|Breakfast|Instant Oatmeal:2
+Oats|160|4|3|5|Lunch|
+popcorn|67|45|348|4|Snack|popcorn:1
+Cereal|100|13|12|10|Breakfast|Milk:1,Cereal:1
