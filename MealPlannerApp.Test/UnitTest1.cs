@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿﻿using System.Collections.Generic;
 using MealPlannerApp;
 using Xunit;
 
@@ -6,6 +6,8 @@ namespace MealPlannerApp.Tests
 {
     public class WeeklyMealPlanTests
     {
+
+    // Limits meals to 3 per day
         [Fact]
         public void SetMeals_ShouldOnlyKeepFirstThreeMeals()
         {
@@ -31,6 +33,9 @@ namespace MealPlannerApp.Tests
             Assert.Equal("Meal 3", result[2].Name);
         }
 
+
+
+    // Handles invalid days
         [Fact]
         public void GetMeals_InvalidDay_ShouldReturnEmptyList()
         {
@@ -43,33 +48,42 @@ namespace MealPlannerApp.Tests
             // Assert
             Assert.Empty(result);
         }
+
+
+
+    // Starts with empty data
         [Fact]
-public void NewWeeklyMealPlan_ShouldInitializeAllDaysAsEmpty()
-{
-    WeeklyMealPlan mealPlan = new WeeklyMealPlan();
+        public void NewWeeklyMealPlan_ShouldInitializeAllDaysAsEmpty()
+        {
+            WeeklyMealPlan mealPlan = new WeeklyMealPlan();
 
-    foreach (string day in WeeklyMealPlan.DaysOfWeek)
-    {
-        Assert.Empty(mealPlan.GetMeals(day));
-    }
-}
+            foreach (string day in WeeklyMealPlan.DaysOfWeek)
+            {
+                Assert.Empty(mealPlan.GetMeals(day));
+            }
+        }
 
-[Fact]
-public void SetMeals_ValidDay_ShouldStoreMeals()
-{
-    WeeklyMealPlan mealPlan = new WeeklyMealPlan();
 
-    List<Recipe> recipes = new List<Recipe>
-    {
-        new Recipe("Oatmeal", 250, 10, 40, 5, new List<Ingredient>(), "Breakfast")
-    };
 
-    mealPlan.SetMeals("Tuesday", recipes);
 
-    List<Recipe> result = mealPlan.GetMeals("Tuesday");
 
-    Assert.Single(result);
-    Assert.Equal("Oatmeal", result[0].Name);
-}
-    }
-}
+    // Correctly stores and retrieves meals
+        [Fact]
+        public void SetMeals_ValidDay_ShouldStoreMeals()
+        {
+            WeeklyMealPlan mealPlan = new WeeklyMealPlan();
+
+            List<Recipe> recipes = new List<Recipe>
+            {
+                new Recipe("Oatmeal", 250, 10, 40, 5, new List<Ingredient>(), "Breakfast")
+            };
+
+            mealPlan.SetMeals("Tuesday", recipes);
+
+            List<Recipe> result = mealPlan.GetMeals("Tuesday");
+
+            Assert.Single(result);
+            Assert.Equal("Oatmeal", result[0].Name);
+        }
+            }
+        }
