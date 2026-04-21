@@ -51,102 +51,145 @@ namespace MealPlannerApp
         }
 
         private void DisplayMainMenu()
-        {
-            Console.WriteLine($"\n---- Welcome, {_userProfile.Name}! ----");
-            Console.WriteLine($"Current Day: {_userProfile.CurrentDay}");
-            Console.WriteLine("1. View User Macro Goals");
-            Console.WriteLine("2. Add Daily Food Entry");
-            Console.WriteLine("3. View Daily Macro Summary");
-            Console.WriteLine("4. View Recipes");
-            Console.WriteLine("5. Add New Recipe");
-            Console.WriteLine("6. Edit Recipe");
-            Console.WriteLine("7. Delete Recipe");
-            Console.WriteLine("8. Create Weekly Meal Plan");
-            Console.WriteLine("9. Edit Weekly Meal Plan");
-            Console.WriteLine("10. View Weekly Meal Plan");
-            Console.WriteLine("11. Generate Grocery List");
-            Console.WriteLine("12. Update Profile");
-            Console.WriteLine("13. Set Current Day");
-            Console.WriteLine("14. View Current Day Meal Plan");
-            Console.WriteLine("15. Edit Daily Food Entry");
-            Console.WriteLine("16. Delete Daily Food Entry");
-            Console.WriteLine("17. Exit");
-            Console.Write("Choose an option: ");
-        }
+    {
+        Console.Clear();
+        AnsiConsole.MarkupLine($"[bold green]---- Meal Planner App ----[/]");
+        AnsiConsole.MarkupLine($"[bold]User:[/] {_userProfile.Name}");
+        AnsiConsole.MarkupLine($"[bold]Current Day:[/] {_userProfile.CurrentDay}");
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.MarkupLine("[yellow]Profile[/]");
+        Console.WriteLine("1. View User Macro Goals");
+        Console.WriteLine("2. Update Profile");
+        Console.WriteLine("3. Set Current Day");
+        Console.WriteLine();
+
+        AnsiConsole.MarkupLine("[yellow]Daily Tracking[/]");
+        Console.WriteLine("4. Add Daily Food Entry");
+        Console.WriteLine("5. Edit Daily Food Entry");
+        Console.WriteLine("6. Delete Daily Food Entry");
+        Console.WriteLine("7. View Daily Macro Summary");
+        Console.WriteLine();
+
+        AnsiConsole.MarkupLine("[yellow]Recipes[/]");
+        Console.WriteLine("8. View Recipes");
+        Console.WriteLine("9. Add New Recipe");
+        Console.WriteLine("10. Edit Recipe");
+        Console.WriteLine("11. Delete Recipe");
+        Console.WriteLine();
+
+        AnsiConsole.MarkupLine("[yellow]Meal Planning[/]");
+        Console.WriteLine("12. Create Weekly Meal Plan");
+        Console.WriteLine("13. Edit Weekly Meal Plan");
+        Console.WriteLine("14. View Weekly Meal Plan");
+        Console.WriteLine("15. View Current Day Meal Plan");
+        Console.WriteLine();
+
+        AnsiConsole.MarkupLine("[yellow]Grocery[/]");
+        Console.WriteLine("16. Generate Grocery List");
+        Console.WriteLine();
+
+        AnsiConsole.MarkupLine("[red]17. Exit[/]");
+        Console.Write("Choose an option: ");
+}
 
         private bool HandleMenuChoice(string input)
-        {
-            switch (input)
-            {
-                case "1":
-                    ViewUserGoals();
-                    break;
-                case "2":
-                    AddDailyFoodEntry();
-                    break;
-                case "3":
-                    ViewDailyMacroSummary();
-                    break;
-                case "4":
-                    ViewRecipes();
-                    break;
-                case "5":
-                    AddRecipe();
-                    break;
-                case "6":
-                    EditRecipe();
-                    break;
-                case "7":
-                    DeleteRecipe();
-                    break;
-                case "8":
-                    CreateWeeklyMealPlan();
-                    break;
-                case "9":
-                    EditWeeklyMealPlan();
-                    break;
-                case "10":
-                    ViewWeeklyMealPlan();
-                    break;
-                case "11":
-                    GenerateGroceryList();
-                    break;
-                case "12":
-                    UpdateUserProfile();
-                    break;
-                case "13":
-                    SetCurrentDay();
-                    break;
-                case "14":
-                    ViewCurrentDayMealPlan();
-                    break;
-                case "15":
-                    EditDailyFoodEntry();
-                    break;
-                case "16":
-                    DeleteDailyFoodEntry();
-                    break;
-                case "17":
-                    Console.WriteLine("Goodbye!");
-                    return false;
-                default:
-                    Console.WriteLine("Invalid option. Try again.");
-                    break;
-            }
+                {
+                    switch (input)
+                    {
+                        case "1":
+                            ViewUserGoals();
+                            break;
+                        case "2":
+                            UpdateUserProfile();
+                            break;
+                        case "3":
+                            SetCurrentDay();
+                            break;
+                        case "4":
+                            AddDailyFoodEntry();
+                            break;
+                        case "5":
+                            EditDailyFoodEntry();
+                            break;
+                        case "6":
+                            DeleteDailyFoodEntry();
+                            break;
+                        case "7":
+                            ViewDailyMacroSummary();
+                            break;
+                        case "8":
+                            ViewRecipes();
+                            break;
+                        case "9":
+                            AddRecipe();
+                            break;
+                        case "10":
+                            EditRecipe();
+                            break;
+                        case "11":
+                            DeleteRecipe();
+                            break;
+                        case "12":
+                            CreateWeeklyMealPlan();
+                            break;
+                        case "13":
+                            EditWeeklyMealPlan();
+                            break;
+                        case "14":
+                            ViewWeeklyMealPlan();
+                            break;
+                        case "15":
+                            ViewCurrentDayMealPlan();
+                            break;
+                        case "16":
+                            GenerateGroceryList();
+                            break;
+                        case "17":
+                            Console.WriteLine("Goodbye!");
+                            return false;
+                        default:
+                            Console.WriteLine("Invalid option. Try again.");
+                            break;
+                    }
 
-            return true;
-        }
+                    return true;
+                }
 
         private void ViewUserGoals()
-        {
-            Console.WriteLine("\n---- User Goals ----");
-            Console.WriteLine($"Name: {_userProfile.Name}");
-            Console.WriteLine($"Current Day: {_userProfile.CurrentDay}");
-            Console.WriteLine($"Calories: {_userProfile.CalorieGoal}");
-            Console.WriteLine($"Protein: {_userProfile.ProteinGoal}");
-            Console.WriteLine($"Carbs: {_userProfile.CarbGoal}");
-            Console.WriteLine($"Fats: {_userProfile.FatGoal}");
-        }
+                {
+                    Console.Clear();
+
+                    var profilePanel = new Panel(
+                        $"[bold]Name:[/] {_userProfile.Name}\n" +
+                        $"[bold]Current Day:[/] {_userProfile.CurrentDay}")
+                    {
+                        Header = new PanelHeader("Profile"),
+                        Border = BoxBorder.Rounded
+                    };
+
+                    var goalsTable = new Table();
+                    goalsTable.Border(TableBorder.Rounded);
+                    goalsTable.Expand();
+
+                    goalsTable.AddColumn("[bold]Macro[/]");
+                    goalsTable.AddColumn("[bold]Goal[/]");
+
+                    goalsTable.AddRow("[yellow]Calories[/]", _userProfile.CalorieGoal.ToString());
+                    goalsTable.AddRow("[green]Protein[/]", _userProfile.ProteinGoal.ToString());
+                    goalsTable.AddRow("[blue]Carbs[/]", _userProfile.CarbGoal.ToString());
+                    goalsTable.AddRow("[orange1]Fats[/]", _userProfile.FatGoal.ToString());
+
+                    var goalsPanel = new Panel(goalsTable)
+                    {
+                        Header = new PanelHeader("Macro Goals"),
+                        Border = BoxBorder.Rounded
+                    };
+
+                    AnsiConsole.Write(profilePanel);
+                    AnsiConsole.WriteLine();
+                    AnsiConsole.Write(goalsPanel);
+                }
 
         private void AddDailyFoodEntry()
         {
@@ -262,7 +305,7 @@ namespace MealPlannerApp
             AnsiConsole.MarkupLine($"[orange1]Fats:[/] {totalFat}/{_userProfile.FatGoal}");
             AnsiConsole.WriteLine();
 
-            DisplayMacroPercentageChart(totalCalories, totalProtein, totalCarbs, totalFat);
+            DisplayMacroFractionChart(totalCalories, totalProtein, totalCarbs, totalFat);
         }
 
         private void ViewRecipes()
@@ -869,22 +912,48 @@ namespace MealPlannerApp
                     AnsiConsole.Write(chart);
                 }
 
-                private void DisplayMacroPercentageChart(int totalCalories, int totalProtein, int totalCarbs, int totalFat)
+                private void DisplayMacroFractionChart(int totalCalories, int totalProtein, int totalCarbs, int totalFat)
                     {
-                        double caloriesPercent = _userProfile.CalorieGoal == 0 ? 0 : (double)totalCalories / _userProfile.CalorieGoal * 100;
-                        double proteinPercent = _userProfile.ProteinGoal == 0 ? 0 : (double)totalProtein / _userProfile.ProteinGoal * 100;
-                        double carbsPercent = _userProfile.CarbGoal == 0 ? 0 : (double)totalCarbs / _userProfile.CarbGoal * 100;
-                        double fatPercent = _userProfile.FatGoal == 0 ? 0 : (double)totalFat / _userProfile.FatGoal * 100;
-
                         var chart = new BarChart()
                             .Width(60)
-                            .Label("[green bold]Macro Goal Progress (%) [/]")
+                            .Label("[bold green]Macro Progress[/]")
                             .CenterLabel();
 
-                        chart.AddItem($"Calories {caloriesPercent:F0}%", caloriesPercent, caloriesPercent > 100 ? Color.Red : Color.Yellow);
-                        chart.AddItem($"Protein {proteinPercent:F0}%", proteinPercent, proteinPercent > 100 ? Color.Red : Color.Green);
-                        chart.AddItem($"Carbs {carbsPercent:F0}%", carbsPercent, carbsPercent > 100 ? Color.Red : Color.Blue);
-                        chart.AddItem($"Fats {fatPercent:F0}%", fatPercent, fatPercent > 100 ? Color.Red : Color.Orange1);
+                        double caloriesRatio = _userProfile.CalorieGoal == 0
+                            ? 0
+                            : (double)totalCalories / _userProfile.CalorieGoal * 100;
+
+                        double proteinRatio = _userProfile.ProteinGoal == 0
+                            ? 0
+                            : (double)totalProtein / _userProfile.ProteinGoal * 100;
+
+                        double carbsRatio = _userProfile.CarbGoal == 0
+                            ? 0
+                            : (double)totalCarbs / _userProfile.CarbGoal * 100;
+
+                        double fatRatio = _userProfile.FatGoal == 0
+                            ? 0
+                            : (double)totalFat / _userProfile.FatGoal * 100;
+
+                        chart.AddItem(
+                            $"Calories {totalCalories}/{_userProfile.CalorieGoal}",
+                            caloriesRatio,
+                            caloriesRatio > 100 ? Color.Red : Color.Yellow);
+
+                        chart.AddItem(
+                            $"Protein {totalProtein}/{_userProfile.ProteinGoal}",
+                            proteinRatio,
+                            proteinRatio > 100 ? Color.Red : Color.Green);
+
+                        chart.AddItem(
+                            $"Carbs {totalCarbs}/{_userProfile.CarbGoal}",
+                            carbsRatio,
+                            carbsRatio > 100 ? Color.Red : Color.Blue);
+
+                        chart.AddItem(
+                            $"Fats {totalFat}/{_userProfile.FatGoal}",
+                            fatRatio,
+                            fatRatio > 100 ? Color.Red : Color.Orange1);
 
                         AnsiConsole.Write(chart);
                     }

@@ -1,4 +1,4 @@
-Sunday|Oats
+Sunday|Oats,popcorn,Protein Shake
 Monday|popcorn
 Tuesday|Cereal
 Wednesday|Oats
