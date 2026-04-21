@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Spectre.Console;
 
 namespace MealPlannerApp
 {
@@ -31,9 +32,19 @@ namespace MealPlannerApp
 
             while (running)
             {
+                Console.Clear();
+
                 DisplayMainMenu();
                 string input = Console.ReadLine()?.Trim() ?? string.Empty;
+
+                Console.Clear();
+
                 running = HandleMenuChoice(input);
+                if (running)
+                {
+                    Console.WriteLine("\nPress any key to continue");
+                    Console.ReadKey();
+                }
             }
         }
 
@@ -142,30 +153,51 @@ namespace MealPlannerApp
         }
 
         private void ViewDailyMacroSummary()
-        {
-            Console.WriteLine("\n---- Daily Macro Summary ----");
+{
+    Console.Clear();
+    AnsiConsole.MarkupLine("[bold green]---- Daily Macro Summary ----[/]");
 
-            if (!_dailyFoodEntries.Any())
-            {
-                Console.WriteLine("No food entries logged.");
-                return;
-            }
+    if (!_dailyFoodEntries.Any())
+    {
+        AnsiConsole.MarkupLine("[red]No food entries logged.[/]");
+        return;
+    }
 
-            foreach (FoodEntry entry in _dailyFoodEntries)
-            {
-                Console.WriteLine($"- {entry.Name}: {entry.Calories} Calories, Protein:{entry.Protein} Carbs:{entry.Carbs} Fats:{entry.Fat}");
-            }
+    var table = new Table();
+    table.Border(TableBorder.Rounded);
+    table.AddColumn("[bold]Food[/]");
+    table.AddColumn("[bold]Calories[/]");
+    table.AddColumn("[bold]Protein[/]");
+    table.AddColumn("[bold]Carbs[/]");
+    table.AddColumn("[bold]Fats[/]");
 
-            int totalCalories = _dailyFoodEntries.Sum(entry => entry.Calories);
-            int totalProtein = _dailyFoodEntries.Sum(entry => entry.Protein);
-            int totalCarbs = _dailyFoodEntries.Sum(entry => entry.Carbs);
-            int totalFat = _dailyFoodEntries.Sum(entry => entry.Fat);
+    foreach (FoodEntry entry in _dailyFoodEntries)
+    {
+        table.AddRow(
+            entry.Name,
+            entry.Calories.ToString(),
+            entry.Protein.ToString(),
+            entry.Carbs.ToString(),
+            entry.Fat.ToString()
+        );
+    }
 
-            Console.WriteLine($"\nCalories: {totalCalories}/{_userProfile.CalorieGoal}");
-            Console.WriteLine($"Protein: {totalProtein}/{_userProfile.ProteinGoal}");
-            Console.WriteLine($"Carbs: {totalCarbs}/{_userProfile.CarbGoal}");
-            Console.WriteLine($"Fats: {totalFat}/{_userProfile.FatGoal}");
-        }
+    AnsiConsole.Write(table);
+
+    int totalCalories = _dailyFoodEntries.Sum(entry => entry.Calories);
+    int totalProtein = _dailyFoodEntries.Sum(entry => entry.Protein);
+    int totalCarbs = _dailyFoodEntries.Sum(entry => entry.Carbs);
+    int totalFat = _dailyFoodEntries.Sum(entry => entry.Fat);
+
+    AnsiConsole.WriteLine();
+    AnsiConsole.MarkupLine($"[yellow]Calories:[/] {totalCalories}/{_userProfile.CalorieGoal}");
+    AnsiConsole.MarkupLine($"[green]Protein:[/] {totalProtein}/{_userProfile.ProteinGoal}");
+    AnsiConsole.MarkupLine($"[blue]Carbs:[/] {totalCarbs}/{_userProfile.CarbGoal}");
+    AnsiConsole.MarkupLine($"[orange1]Fats:[/] {totalFat}/{_userProfile.FatGoal}");
+    AnsiConsole.WriteLine();
+
+    DisplayMacroChart(totalCalories, totalProtein, totalCarbs, totalFat);
+}
 
         private void ViewRecipes()
         {
@@ -592,5 +624,26 @@ namespace MealPlannerApp
                 Console.WriteLine("Enter a valid non-negative number.");
             }
         }
+        private void DisplayMacroChart(int totalCalories, int totalProtein, int totalCarbs, int totalFat)
+            {
+                var chart = new BarChart()
+                    .Width(60)
+                    .Label("[green bold]Daily Macros[/]")
+                    .CenterLabel();
+
+                chart.AddItem($"Calories ({totalCalories}/{_userProfile.CalorieGoal})", totalCalories,
+                    totalCalories > _userProfile.CalorieGoal ? Color.Red : Color.Yellow);
+
+                chart.AddItem($"Protein ({totalProtein}/{_userProfile.ProteinGoal})", totalProtein,
+                    totalProtein > _userProfile.ProteinGoal ? Color.Red : Color.Green);
+
+                chart.AddItem($"Carbs ({totalCarbs}/{_userProfile.CarbGoal})", totalCarbs,
+                    totalCarbs > _userProfile.CarbGoal ? Color.Red : Color.Blue);
+
+                chart.AddItem($"Fats ({totalFat}/{_userProfile.FatGoal})", totalFat,
+                    totalFat > _userProfile.FatGoal ? Color.Red : Color.Orange1);
+
+                AnsiConsole.Write(chart);
+            }
     }
 }

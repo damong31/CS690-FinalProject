@@ -1,7 +1,7 @@
-Sunday|Oats,Oats,Oats
-Monday|Oats,Oats,Oats
-Tuesday|Oats,Oats,Oats
-Wednesday|Oats,Oats,Oats
-Thursday|Oats,Oats,Oats
-Friday|Oats,Oats,Oats
-Saturday|Oats,Oats,Oats
+Sunday|Oats
+Monday|popcorn
+Tuesday|Cereal
+Wednesday|Oats
+Thursday|Cereal
+Friday|popcorn
+Saturday|Oats

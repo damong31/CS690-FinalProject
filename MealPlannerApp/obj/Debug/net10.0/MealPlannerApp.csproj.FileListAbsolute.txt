@@ -13,3 +13,7 @@
 /workspaces/CS690-FinalProject/MealPlannerApp/obj/Debug/net10.0/MealPlannerApp.pdb
 /workspaces/CS690-FinalProject/MealPlannerApp/obj/Debug/net10.0/MealPlannerApp.genruntimeconfig.cache
 /workspaces/CS690-FinalProject/MealPlannerApp/obj/Debug/net10.0/ref/MealPlannerApp.dll
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Debug/net10.0/Spectre.Console.dll
+/workspaces/CS690-FinalProject/MealPlannerApp/bin/Debug/net10.0/Spectre.Console.Ansi.dll
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Debug/net10.0/MealPlannerApp.csproj.AssemblyReference.cache
+/workspaces/CS690-FinalProject/MealPlannerApp/obj/Debug/net10.0/MealPlan.1313DA19.Up2Date
