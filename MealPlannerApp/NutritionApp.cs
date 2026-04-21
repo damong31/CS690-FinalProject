@@ -153,67 +153,151 @@ namespace MealPlannerApp
         }
 
         private void ViewDailyMacroSummary()
-{
-    Console.Clear();
-    AnsiConsole.MarkupLine("[bold green]---- Daily Macro Summary ----[/]");
+                {
+                    Console.Clear();
+                    AnsiConsole.MarkupLine("[bold green]---- Daily Macro Summary ----[/]");
+                    AnsiConsole.MarkupLine($"[bold]Current Day:[/] {_userProfile.CurrentDay}");
+                    AnsiConsole.WriteLine();
 
-    if (!_dailyFoodEntries.Any())
-    {
-        AnsiConsole.MarkupLine("[red]No food entries logged.[/]");
-        return;
-    }
+                    List<Recipe> plannedMeals = _mealPlanService.GetMeals(_userProfile.CurrentDay);
 
-    var table = new Table();
-    table.Border(TableBorder.Rounded);
-    table.AddColumn("[bold]Food[/]");
-    table.AddColumn("[bold]Calories[/]");
-    table.AddColumn("[bold]Protein[/]");
-    table.AddColumn("[bold]Carbs[/]");
-    table.AddColumn("[bold]Fats[/]");
+                    bool hasFoodEntries = _dailyFoodEntries.Any();
+                    bool hasPlannedMeals = plannedMeals.Any();
 
-    foreach (FoodEntry entry in _dailyFoodEntries)
-    {
-        table.AddRow(
-            entry.Name,
-            entry.Calories.ToString(),
-            entry.Protein.ToString(),
-            entry.Carbs.ToString(),
-            entry.Fat.ToString()
-        );
-    }
+                    if (!hasFoodEntries && !hasPlannedMeals)
+                    {
+                        AnsiConsole.MarkupLine("[red]No food entries or planned meals found for today.[/]");
+                        return;
+                    }
 
-    AnsiConsole.Write(table);
+                    int totalCalories = 0;
+                    int totalProtein = 0;
+                    int totalCarbs = 0;
+                    int totalFat = 0;
 
-    int totalCalories = _dailyFoodEntries.Sum(entry => entry.Calories);
-    int totalProtein = _dailyFoodEntries.Sum(entry => entry.Protein);
-    int totalCarbs = _dailyFoodEntries.Sum(entry => entry.Carbs);
-    int totalFat = _dailyFoodEntries.Sum(entry => entry.Fat);
+                    if (hasPlannedMeals)
+                    {
+                        AnsiConsole.MarkupLine("[bold yellow]Planned Meals[/]");
 
-    AnsiConsole.WriteLine();
-    AnsiConsole.MarkupLine($"[yellow]Calories:[/] {totalCalories}/{_userProfile.CalorieGoal}");
-    AnsiConsole.MarkupLine($"[green]Protein:[/] {totalProtein}/{_userProfile.ProteinGoal}");
-    AnsiConsole.MarkupLine($"[blue]Carbs:[/] {totalCarbs}/{_userProfile.CarbGoal}");
-    AnsiConsole.MarkupLine($"[orange1]Fats:[/] {totalFat}/{_userProfile.FatGoal}");
-    AnsiConsole.WriteLine();
+                        var mealsTable = new Table();
+                        mealsTable.Border(TableBorder.Rounded);
+                        mealsTable.AddColumn("[bold]Meal[/]");
+                        mealsTable.AddColumn("[bold]Category[/]");
+                        mealsTable.AddColumn("[bold]Calories[/]");
+                        mealsTable.AddColumn("[bold]Protein[/]");
+                        mealsTable.AddColumn("[bold]Carbs[/]");
+                        mealsTable.AddColumn("[bold]Fats[/]");
 
-    DisplayMacroChart(totalCalories, totalProtein, totalCarbs, totalFat);
-}
+                        foreach (Recipe meal in plannedMeals)
+                        {
+                            mealsTable.AddRow(
+                                meal.Name,
+                                meal.Category,
+                                meal.Calories.ToString(),
+                                meal.Protein.ToString(),
+                                meal.Carbs.ToString(),
+                                meal.Fat.ToString()
+                            );
+
+                            totalCalories += meal.Calories;
+                            totalProtein += meal.Protein;
+                            totalCarbs += meal.Carbs;
+                            totalFat += meal.Fat;
+                        }
+
+                        AnsiConsole.Write(mealsTable);
+                        AnsiConsole.WriteLine();
+                    }
+
+                    if (hasFoodEntries)
+                    {
+                        AnsiConsole.MarkupLine("[bold cyan]Daily Food Entries[/]");
+
+                        var foodTable = new Table();
+                        foodTable.Border(TableBorder.Rounded);
+                        foodTable.AddColumn("[bold]Food[/]");
+                        foodTable.AddColumn("[bold]Calories[/]");
+                        foodTable.AddColumn("[bold]Protein[/]");
+                        foodTable.AddColumn("[bold]Carbs[/]");
+                        foodTable.AddColumn("[bold]Fats[/]");
+
+                        foreach (FoodEntry entry in _dailyFoodEntries)
+                        {
+                            foodTable.AddRow(
+                                entry.Name,
+                                entry.Calories.ToString(),
+                                entry.Protein.ToString(),
+                                entry.Carbs.ToString(),
+                                entry.Fat.ToString()
+                            );
+
+                            totalCalories += entry.Calories;
+                            totalProtein += entry.Protein;
+                            totalCarbs += entry.Carbs;
+                            totalFat += entry.Fat;
+                        }
+
+                        AnsiConsole.Write(foodTable);
+                        AnsiConsole.WriteLine();
+                    }
+
+                    AnsiConsole.MarkupLine("[bold green]Combined Totals[/]");
+                    AnsiConsole.MarkupLine($"[yellow]Calories:[/] {totalCalories}/{_userProfile.CalorieGoal}");
+                    AnsiConsole.MarkupLine($"[green]Protein:[/] {totalProtein}/{_userProfile.ProteinGoal}");
+                    AnsiConsole.MarkupLine($"[blue]Carbs:[/] {totalCarbs}/{_userProfile.CarbGoal}");
+                    AnsiConsole.MarkupLine($"[orange1]Fats:[/] {totalFat}/{_userProfile.FatGoal}");
+                    AnsiConsole.WriteLine();
+
+                    DisplayMacroPercentageChart(totalCalories, totalProtein, totalCarbs, totalFat);
+                }
 
         private void ViewRecipes()
-        {
-            Console.WriteLine("\n---- Recipes ----");
+                {
+                    Console.Clear();
+                    AnsiConsole.MarkupLine("[bold green]---- Recipes ----[/]");
+                    AnsiConsole.WriteLine();
 
-            if (!_recipeService.Recipes.Any())
-            {
-                Console.WriteLine("No recipes available.");
-                return;
-            }
+                    if (!_recipeService.Recipes.Any())
+                    {
+                        AnsiConsole.MarkupLine("[red]No recipes available.[/]");
+                        return;
+                    }
 
-            for (int i = 0; i < _recipeService.Recipes.Count; i++)
-            {
-                Console.WriteLine($"{i + 1}. {FormatRecipe(_recipeService.Recipes[i])}");
-            }
-        }
+                    var table = new Table();
+                    table.Border(TableBorder.Rounded);
+                    table.Expand();
+
+                    table.AddColumn("[bold]#[/]");
+                    table.AddColumn("[bold]Recipe[/]");
+                    table.AddColumn("[bold]Category[/]");
+                    table.AddColumn("[bold]Calories[/]");
+                    table.AddColumn("[bold]Protein[/]");
+                    table.AddColumn("[bold]Carbs[/]");
+                    table.AddColumn("[bold]Fats[/]");
+                    table.AddColumn("[bold]Ingredients[/]");
+
+                    for (int i = 0; i < _recipeService.Recipes.Count; i++)
+                    {
+                        Recipe recipe = _recipeService.Recipes[i];
+
+                        string ingredientsText = recipe.Ingredients.Any()
+                            ? string.Join(", ", recipe.Ingredients.Select(i => $"{i.Name} ({i.Quantity})"))
+                            : "[grey]None[/]";
+
+                        table.AddRow(
+                            (i + 1).ToString(),
+                            recipe.Name,
+                            recipe.Category,
+                            recipe.Calories.ToString(),
+                            recipe.Protein.ToString(),
+                            recipe.Carbs.ToString(),
+                            recipe.Fat.ToString(),
+                            ingredientsText
+                        );
+                    }
+
+                    AnsiConsole.Write(table);
+                }
 
         private void AddRecipe()
         {
@@ -371,23 +455,108 @@ namespace MealPlannerApp
         }
 
         private void ViewWeeklyMealPlan()
-        {
-            Console.WriteLine("\n---- Weekly Meal Plan ----");
+                {
+                    Console.Clear();
+                    AnsiConsole.MarkupLine("[bold green]---- Weekly Meal Plan ----[/]");
+                    AnsiConsole.WriteLine();
 
-            bool hasAnyMeals = WeeklyMealPlan.DaysOfWeek.Any(day => _mealPlanService.GetMeals(day).Any());
+                    bool hasAnyMeals = WeeklyMealPlan.DaysOfWeek.Any(day => _mealPlanService.GetMeals(day).Any());
 
-            if (!hasAnyMeals)
-            {
-                Console.WriteLine("No meals planned yet.");
-                return;
-            }
+                    if (!hasAnyMeals)
+                    {
+                        AnsiConsole.MarkupLine("[red]No meals planned yet.[/]");
+                        return;
+                    }
 
-            foreach (string day in WeeklyMealPlan.DaysOfWeek)
-            {
-                Console.WriteLine($"\n{day}:");
-                DisplayMealList(_mealPlanService.GetMeals(day), "  No meals planned.", false, "  ");
-            }
-        }
+                    int weeklyCalories = 0;
+                    int weeklyProtein = 0;
+                    int weeklyCarbs = 0;
+                    int weeklyFat = 0;
+
+                    foreach (string day in WeeklyMealPlan.DaysOfWeek)
+                    {
+                        List<Recipe> meals = _mealPlanService.GetMeals(day);
+
+                        AnsiConsole.Write(new Rule($"[yellow]{day}[/]").RuleStyle("grey").LeftJustified());
+
+                        if (!meals.Any())
+                        {
+                            AnsiConsole.MarkupLine("[grey]No meals planned.[/]");
+                            AnsiConsole.WriteLine();
+                            continue;
+                        }
+
+                        var table = new Table();
+                        table.Border(TableBorder.Rounded);
+                        table.Expand();
+                        table.AddColumn("[bold]#[/]");
+                        table.AddColumn("[bold]Meal[/]");
+                        table.AddColumn("[bold]Category[/]");
+                        table.AddColumn("[bold]Calories[/]");
+                        table.AddColumn("[bold]Protein[/]");
+                        table.AddColumn("[bold]Carbs[/]");
+                        table.AddColumn("[bold]Fats[/]");
+
+                        int totalCalories = 0;
+                        int totalProtein = 0;
+                        int totalCarbs = 0;
+                        int totalFat = 0;
+
+                        for (int i = 0; i < meals.Count; i++)
+                        {
+                            Recipe recipe = meals[i];
+
+                            table.AddRow(
+                                (i + 1).ToString(),
+                                recipe.Name,
+                                recipe.Category,
+                                recipe.Calories.ToString(),
+                                recipe.Protein.ToString(),
+                                recipe.Carbs.ToString(),
+                                recipe.Fat.ToString()
+                            );
+
+                            totalCalories += recipe.Calories;
+                            totalProtein += recipe.Protein;
+                            totalCarbs += recipe.Carbs;
+                            totalFat += recipe.Fat;
+                        }
+
+                        weeklyCalories += totalCalories;
+                        weeklyProtein += totalProtein;
+                        weeklyCarbs += totalCarbs;
+                        weeklyFat += totalFat;
+
+                        AnsiConsole.Write(table);
+
+                        var totalsPanel = new Panel(
+                            $"[yellow]Calories:[/] {totalCalories}    " +
+                            $"[green]Protein:[/] {totalProtein}    " +
+                            $"[blue]Carbs:[/] {totalCarbs}    " +
+                            $"[orange1]Fats:[/] {totalFat}")
+                        {
+                            Header = new PanelHeader($"{day} Totals"),
+                            Border = BoxBorder.Rounded
+                        };
+
+                        AnsiConsole.Write(totalsPanel);
+                        AnsiConsole.WriteLine();
+                    }
+
+                    AnsiConsole.Write(new Rule("[bold green]Weekly Totals[/]").RuleStyle("green"));
+
+                    var weeklyPanel = new Panel(
+                        $"[yellow]Calories:[/] {weeklyCalories}\n" +
+                        $"[green]Protein:[/] {weeklyProtein}\n" +
+                        $"[blue]Carbs:[/] {weeklyCarbs}\n" +
+                        $"[orange1]Fats:[/] {weeklyFat}")
+                    {
+                        Header = new PanelHeader("Summary"),
+                        Border = BoxBorder.Double
+                    };
+
+                    AnsiConsole.Write(weeklyPanel);
+                }
 
         private void GenerateGroceryList()
         {
@@ -645,5 +814,45 @@ namespace MealPlannerApp
 
                 AnsiConsole.Write(chart);
             }
+
+            private void DisplayMacroRemainingChart(int totalCalories, int totalProtein, int totalCarbs, int totalFat)
+                {
+                    int remainingCalories = Math.Max(0, _userProfile.CalorieGoal - totalCalories);
+                    int remainingProtein = Math.Max(0, _userProfile.ProteinGoal - totalProtein);
+                    int remainingCarbs = Math.Max(0, _userProfile.CarbGoal - totalCarbs);
+                    int remainingFat = Math.Max(0, _userProfile.FatGoal - totalFat);
+
+                    var chart = new BarChart()
+                        .Width(60)
+                        .Label("[green bold]Remaining Macros[/]")
+                        .CenterLabel();
+
+                    chart.AddItem("Calories Left", remainingCalories, Color.Yellow);
+                    chart.AddItem("Protein Left", remainingProtein, Color.Green);
+                    chart.AddItem("Carbs Left", remainingCarbs, Color.Blue);
+                    chart.AddItem("Fats Left", remainingFat, Color.Orange1);
+
+                    AnsiConsole.Write(chart);
+                }
+
+                private void DisplayMacroPercentageChart(int totalCalories, int totalProtein, int totalCarbs, int totalFat)
+                    {
+                        double caloriesPercent = _userProfile.CalorieGoal == 0 ? 0 : (double)totalCalories / _userProfile.CalorieGoal * 100;
+                        double proteinPercent = _userProfile.ProteinGoal == 0 ? 0 : (double)totalProtein / _userProfile.ProteinGoal * 100;
+                        double carbsPercent = _userProfile.CarbGoal == 0 ? 0 : (double)totalCarbs / _userProfile.CarbGoal * 100;
+                        double fatPercent = _userProfile.FatGoal == 0 ? 0 : (double)totalFat / _userProfile.FatGoal * 100;
+
+                        var chart = new BarChart()
+                            .Width(60)
+                            .Label("[green bold]Macro Goal Progress (%) [/]")
+                            .CenterLabel();
+
+                        chart.AddItem($"Calories {caloriesPercent:F0}%", caloriesPercent, caloriesPercent > 100 ? Color.Red : Color.Yellow);
+                        chart.AddItem($"Protein {proteinPercent:F0}%", proteinPercent, proteinPercent > 100 ? Color.Red : Color.Green);
+                        chart.AddItem($"Carbs {carbsPercent:F0}%", carbsPercent, carbsPercent > 100 ? Color.Red : Color.Blue);
+                        chart.AddItem($"Fats {fatPercent:F0}%", fatPercent, fatPercent > 100 ? Color.Red : Color.Orange1);
+
+                        AnsiConsole.Write(chart);
+                    }
     }
 }
