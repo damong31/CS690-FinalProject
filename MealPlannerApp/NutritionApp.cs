@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Spectre.Console;
+using System.IO;
 
 namespace MealPlannerApp
 {
@@ -10,16 +11,18 @@ namespace MealPlannerApp
         private readonly ProfileService _profileService;
         private readonly RecipeService _recipeService;
         private readonly MealPlanService _mealPlanService;
+        private readonly DailyFoodEntryService _dailyFoodEntryService;
 
         private UserProfile _userProfile = null!;
-        private readonly List<FoodEntry> _dailyFoodEntries = new();
 
         public NutritionApp()
         {
             var fileService = new FileService();
+
             _profileService = new ProfileService(fileService);
             _recipeService = new RecipeService(fileService);
             _mealPlanService = new MealPlanService(fileService, _recipeService);
+            _dailyFoodEntryService = new DailyFoodEntryService(fileService);
         }
 
         public void Run()
@@ -27,19 +30,18 @@ namespace MealPlannerApp
             _userProfile = _profileService.LoadOrCreateUserProfile();
             _recipeService.LoadRecipes();
             _mealPlanService.LoadWeeklyMealPlan();
+            _dailyFoodEntryService.LoadFoodEntries();
 
             bool running = true;
 
             while (running)
             {
                 Console.Clear();
-
                 DisplayMainMenu();
                 string input = Console.ReadLine()?.Trim() ?? string.Empty;
-
                 Console.Clear();
-
                 running = HandleMenuChoice(input);
+
                 if (running)
                 {
                     Console.WriteLine("\nPress any key to continue");
@@ -66,7 +68,9 @@ namespace MealPlannerApp
             Console.WriteLine("12. Update Profile");
             Console.WriteLine("13. Set Current Day");
             Console.WriteLine("14. View Current Day Meal Plan");
-            Console.WriteLine("15. Exit");
+            Console.WriteLine("15. Edit Daily Food Entry");
+            Console.WriteLine("16. Delete Daily Food Entry");
+            Console.WriteLine("17. Exit");
             Console.Write("Choose an option: ");
         }
 
@@ -117,6 +121,12 @@ namespace MealPlannerApp
                     ViewCurrentDayMealPlan();
                     break;
                 case "15":
+                    EditDailyFoodEntry();
+                    break;
+                case "16":
+                    DeleteDailyFoodEntry();
+                    break;
+                case "17":
                     Console.WriteLine("Goodbye!");
                     return false;
                 default:
@@ -141,6 +151,7 @@ namespace MealPlannerApp
         private void AddDailyFoodEntry()
         {
             Console.WriteLine("\n---- Add Daily Food Entry ----");
+            Console.WriteLine($"Current Day: {_userProfile.CurrentDay}");
 
             string name = ReadRequiredText("Food name: ", "Unknown Food");
             int calories = ReadNonNegativeInt("Calories: ");
@@ -148,108 +159,111 @@ namespace MealPlannerApp
             int carbs = ReadNonNegativeInt("Carbs: ");
             int fat = ReadNonNegativeInt("Fat: ");
 
-            _dailyFoodEntries.Add(new FoodEntry(name, calories, protein, carbs, fat));
+            var entry = new FoodEntry(_userProfile.CurrentDay, name, calories, protein, carbs, fat);
+            _dailyFoodEntryService.AddFoodEntry(entry);
+
             Console.WriteLine("Food entry added.");
         }
 
         private void ViewDailyMacroSummary()
+        {
+            Console.Clear();
+            AnsiConsole.MarkupLine("[bold green]---- Daily Macro Summary ----[/]");
+            AnsiConsole.MarkupLine($"[bold]Current Day:[/] {_userProfile.CurrentDay}");
+            AnsiConsole.WriteLine();
+
+            List<Recipe> plannedMeals = _mealPlanService.GetMeals(_userProfile.CurrentDay);
+            List<FoodEntry> dailyEntries = _dailyFoodEntryService.GetEntriesForDay(_userProfile.CurrentDay);
+
+            bool hasFoodEntries = dailyEntries.Any();
+            bool hasPlannedMeals = plannedMeals.Any();
+
+            if (!hasFoodEntries && !hasPlannedMeals)
+            {
+                AnsiConsole.MarkupLine("[red]No food entries or planned meals found for today.[/]");
+                return;
+            }
+
+            int totalCalories = 0;
+            int totalProtein = 0;
+            int totalCarbs = 0;
+            int totalFat = 0;
+
+            if (hasPlannedMeals)
+            {
+                AnsiConsole.MarkupLine("[bold yellow]Planned Meals[/]");
+
+                var mealsTable = new Spectre.Console.Table();
+                mealsTable.Border(Spectre.Console.TableBorder.Rounded);
+                mealsTable.AddColumn("[bold]Meal[/]");
+                mealsTable.AddColumn("[bold]Category[/]");
+                mealsTable.AddColumn("[bold]Calories[/]");
+                mealsTable.AddColumn("[bold]Protein[/]");
+                mealsTable.AddColumn("[bold]Carbs[/]");
+                mealsTable.AddColumn("[bold]Fats[/]");
+
+                foreach (Recipe meal in plannedMeals)
                 {
-                    Console.Clear();
-                    AnsiConsole.MarkupLine("[bold green]---- Daily Macro Summary ----[/]");
-                    AnsiConsole.MarkupLine($"[bold]Current Day:[/] {_userProfile.CurrentDay}");
-                    AnsiConsole.WriteLine();
+                    mealsTable.AddRow(
+                        meal.Name,
+                        meal.Category,
+                        meal.Calories.ToString(),
+                        meal.Protein.ToString(),
+                        meal.Carbs.ToString(),
+                        meal.Fat.ToString()
+                    );
 
-                    List<Recipe> plannedMeals = _mealPlanService.GetMeals(_userProfile.CurrentDay);
-
-                    bool hasFoodEntries = _dailyFoodEntries.Any();
-                    bool hasPlannedMeals = plannedMeals.Any();
-
-                    if (!hasFoodEntries && !hasPlannedMeals)
-                    {
-                        AnsiConsole.MarkupLine("[red]No food entries or planned meals found for today.[/]");
-                        return;
-                    }
-
-                    int totalCalories = 0;
-                    int totalProtein = 0;
-                    int totalCarbs = 0;
-                    int totalFat = 0;
-
-                    if (hasPlannedMeals)
-                    {
-                        AnsiConsole.MarkupLine("[bold yellow]Planned Meals[/]");
-
-                        var mealsTable = new Table();
-                        mealsTable.Border(TableBorder.Rounded);
-                        mealsTable.AddColumn("[bold]Meal[/]");
-                        mealsTable.AddColumn("[bold]Category[/]");
-                        mealsTable.AddColumn("[bold]Calories[/]");
-                        mealsTable.AddColumn("[bold]Protein[/]");
-                        mealsTable.AddColumn("[bold]Carbs[/]");
-                        mealsTable.AddColumn("[bold]Fats[/]");
-
-                        foreach (Recipe meal in plannedMeals)
-                        {
-                            mealsTable.AddRow(
-                                meal.Name,
-                                meal.Category,
-                                meal.Calories.ToString(),
-                                meal.Protein.ToString(),
-                                meal.Carbs.ToString(),
-                                meal.Fat.ToString()
-                            );
-
-                            totalCalories += meal.Calories;
-                            totalProtein += meal.Protein;
-                            totalCarbs += meal.Carbs;
-                            totalFat += meal.Fat;
-                        }
-
-                        AnsiConsole.Write(mealsTable);
-                        AnsiConsole.WriteLine();
-                    }
-
-                    if (hasFoodEntries)
-                    {
-                        AnsiConsole.MarkupLine("[bold cyan]Daily Food Entries[/]");
-
-                        var foodTable = new Table();
-                        foodTable.Border(TableBorder.Rounded);
-                        foodTable.AddColumn("[bold]Food[/]");
-                        foodTable.AddColumn("[bold]Calories[/]");
-                        foodTable.AddColumn("[bold]Protein[/]");
-                        foodTable.AddColumn("[bold]Carbs[/]");
-                        foodTable.AddColumn("[bold]Fats[/]");
-
-                        foreach (FoodEntry entry in _dailyFoodEntries)
-                        {
-                            foodTable.AddRow(
-                                entry.Name,
-                                entry.Calories.ToString(),
-                                entry.Protein.ToString(),
-                                entry.Carbs.ToString(),
-                                entry.Fat.ToString()
-                            );
-
-                            totalCalories += entry.Calories;
-                            totalProtein += entry.Protein;
-                            totalCarbs += entry.Carbs;
-                            totalFat += entry.Fat;
-                        }
-
-                        AnsiConsole.Write(foodTable);
-                        AnsiConsole.WriteLine();
-                    }
-
-                    AnsiConsole.MarkupLine("[bold green]Combined Totals[/]");
-                    AnsiConsole.MarkupLine($"[yellow]Calories:[/] {totalCalories}/{_userProfile.CalorieGoal}");
-                    AnsiConsole.MarkupLine($"[green]Protein:[/] {totalProtein}/{_userProfile.ProteinGoal}");
-                    AnsiConsole.MarkupLine($"[blue]Carbs:[/] {totalCarbs}/{_userProfile.CarbGoal}");
-                    AnsiConsole.MarkupLine($"[orange1]Fats:[/] {totalFat}/{_userProfile.FatGoal}");
-                    AnsiConsole.WriteLine();
-
-                    DisplayMacroPercentageChart(totalCalories, totalProtein, totalCarbs, totalFat);
+                    totalCalories += meal.Calories;
+                    totalProtein += meal.Protein;
+                    totalCarbs += meal.Carbs;
+                    totalFat += meal.Fat;
                 }
+
+                AnsiConsole.Write(mealsTable);
+                AnsiConsole.WriteLine();
+            }
+
+            if (hasFoodEntries)
+            {
+                AnsiConsole.MarkupLine("[bold cyan]Daily Food Entries[/]");
+
+                var foodTable = new Spectre.Console.Table();
+                foodTable.Border(Spectre.Console.TableBorder.Rounded);
+                foodTable.AddColumn("[bold]Food[/]");
+                foodTable.AddColumn("[bold]Calories[/]");
+                foodTable.AddColumn("[bold]Protein[/]");
+                foodTable.AddColumn("[bold]Carbs[/]");
+                foodTable.AddColumn("[bold]Fats[/]");
+
+                foreach (FoodEntry entry in dailyEntries)
+                {
+                    foodTable.AddRow(
+                        entry.Name,
+                        entry.Calories.ToString(),
+                        entry.Protein.ToString(),
+                        entry.Carbs.ToString(),
+                        entry.Fat.ToString()
+                    );
+
+                    totalCalories += entry.Calories;
+                    totalProtein += entry.Protein;
+                    totalCarbs += entry.Carbs;
+                    totalFat += entry.Fat;
+                }
+
+                AnsiConsole.Write(foodTable);
+                AnsiConsole.WriteLine();
+            }
+
+            AnsiConsole.MarkupLine("[bold green]Combined Totals[/]");
+            AnsiConsole.MarkupLine($"[yellow]Calories:[/] {totalCalories}/{_userProfile.CalorieGoal}");
+            AnsiConsole.MarkupLine($"[green]Protein:[/] {totalProtein}/{_userProfile.ProteinGoal}");
+            AnsiConsole.MarkupLine($"[blue]Carbs:[/] {totalCarbs}/{_userProfile.CarbGoal}");
+            AnsiConsole.MarkupLine($"[orange1]Fats:[/] {totalFat}/{_userProfile.FatGoal}");
+            AnsiConsole.WriteLine();
+
+            DisplayMacroPercentageChart(totalCalories, totalProtein, totalCarbs, totalFat);
+        }
 
         private void ViewRecipes()
                 {
@@ -559,22 +573,31 @@ namespace MealPlannerApp
                 }
 
         private void GenerateGroceryList()
-        {
-            Console.WriteLine("\n---- Grocery List ----");
+                {
+                    Console.Clear();
+                    AnsiConsole.MarkupLine("[bold green]---- Grocery List ----[/]");
+                    AnsiConsole.WriteLine();
 
-            var groceryTotals = _mealPlanService.GenerateGroceryList();
+                    var groceryTotals = _mealPlanService.GenerateGroceryList();
 
-            if (!groceryTotals.Any())
-            {
-                Console.WriteLine("No meal plan available.");
-                return;
-            }
+                    if (!groceryTotals.Any())
+                    {
+                        AnsiConsole.MarkupLine("[red]No meal plan available.[/]");
+                        return;
+                    }
 
-            foreach (var item in groceryTotals.OrderBy(i => i.Key))
-            {
-                Console.WriteLine($"{item.Key}: {item.Value}");
-            }
-        }
+                    // Display in console
+                    foreach (var item in groceryTotals.OrderBy(i => i.Key))
+                    {
+                        AnsiConsole.MarkupLine($"[yellow]{item.Key}:[/] {item.Value}");
+                    }
+
+                    // Export to file
+                    SaveGroceryListToFile(groceryTotals);
+
+                    AnsiConsole.WriteLine();
+                    AnsiConsole.MarkupLine("[green]Grocery list exported to groceryList.txt[/]");
+                }
 
         private void UpdateUserProfile()
         {
@@ -653,27 +676,38 @@ namespace MealPlannerApp
         {
             List<Ingredient> ingredients = new();
 
-            Console.WriteLine("Add ingredients one by one.");
-            Console.WriteLine("Type 'done' when finished.");
+            Console.WriteLine("\nAdd ingredients one by one.");
+            Console.WriteLine("Type 'done' when finished.\n");
 
             while (true)
             {
-                Console.Write("Ingredient: ");
-                string input = Console.ReadLine()?.Trim() ?? string.Empty;
+                Console.Write("Ingredient name: ");
+                string name = Console.ReadLine()?.Trim() ?? "";
 
-                if (string.IsNullOrWhiteSpace(input))
+                if (string.IsNullOrWhiteSpace(name))
                 {
                     Console.WriteLine("Ingredient name cannot be empty.");
                     continue;
                 }
 
-                if (input.Equals("done", StringComparison.OrdinalIgnoreCase))
+                if (name.Equals("done", StringComparison.OrdinalIgnoreCase))
                 {
                     break;
                 }
 
                 double quantity = ReadNonNegativeDouble("Quantity: ");
-                ingredients.Add(new Ingredient(input, quantity));
+
+                Console.Write("Unit ( lbs, cups, grams, count): ");
+                string unit = Console.ReadLine()?.Trim() ?? "";
+
+                if (string.IsNullOrWhiteSpace(unit))
+                {
+                    unit = ""; // optional, or you can force a default like "units"
+                }
+
+                ingredients.Add(new Ingredient(name, quantity, unit));
+
+                Console.WriteLine($"Added: {name} - {quantity} {unit}");
             }
 
             return ingredients;
@@ -853,6 +887,115 @@ namespace MealPlannerApp
                         chart.AddItem($"Fats {fatPercent:F0}%", fatPercent, fatPercent > 100 ? Color.Red : Color.Orange1);
 
                         AnsiConsole.Write(chart);
+                    }
+
+                    private void DisplayCurrentDayFoodEntries(List<FoodEntry> entries)
+                    {
+                        if (!entries.Any())
+                        {
+                            Console.WriteLine("No daily food entries for this day.");
+                            return;
+                        }
+
+                        for (int i = 0; i < entries.Count; i++)
+                        {
+                            FoodEntry entry = entries[i];
+                            Console.WriteLine($"{i + 1}. {entry.Name} - {entry.Calories} Calories, Protein:{entry.Protein} Carbs:{entry.Carbs} Fats:{entry.Fat}");
+                        }
+                    }
+
+                    private void EditDailyFoodEntry()
+                    {
+                        Console.WriteLine("\n---- Edit Daily Food Entry ----");
+                        Console.WriteLine($"Current Day: {_userProfile.CurrentDay}");
+
+                        List<FoodEntry> entriesForDay = _dailyFoodEntryService.GetEntriesForDay(_userProfile.CurrentDay);
+
+                        if (!entriesForDay.Any())
+                        {
+                            Console.WriteLine("No daily food entries for this day.");
+                            return;
+                        }
+
+                        DisplayCurrentDayFoodEntries(entriesForDay);
+
+                        int choice = ReadNonNegativeInt("Enter food entry number to edit: ");
+
+                        if (choice < 1 || choice > entriesForDay.Count)
+                        {
+                            Console.WriteLine("Invalid food entry number.");
+                            return;
+                        }
+
+                        FoodEntry selectedEntry = entriesForDay[choice - 1];
+                        int actualIndex = _dailyFoodEntryService.FoodEntries.IndexOf(selectedEntry);
+
+                        string name = ReadOptionalText($"Name ({selectedEntry.Name}): ", selectedEntry.Name);
+                        int calories = ReadOptionalInt($"Calories ({selectedEntry.Calories}): ", selectedEntry.Calories);
+                        int protein = ReadOptionalInt($"Protein ({selectedEntry.Protein}): ", selectedEntry.Protein);
+                        int carbs = ReadOptionalInt($"Carbs ({selectedEntry.Carbs}): ", selectedEntry.Carbs);
+                        int fat = ReadOptionalInt($"Fat ({selectedEntry.Fat}): ", selectedEntry.Fat);
+
+                        var updatedEntry = new FoodEntry(selectedEntry.Day, name, calories, protein, carbs, fat);
+                        _dailyFoodEntryService.UpdateFoodEntry(actualIndex, updatedEntry);
+
+                        Console.WriteLine("Food entry updated.");
+                    }
+
+                    private void DeleteDailyFoodEntry()
+                    {
+                        Console.WriteLine("\n---- Delete Daily Food Entry ----");
+                        Console.WriteLine($"Current Day: {_userProfile.CurrentDay}");
+
+                        List<FoodEntry> entriesForDay = _dailyFoodEntryService.GetEntriesForDay(_userProfile.CurrentDay);
+
+                        if (!entriesForDay.Any())
+                        {
+                            Console.WriteLine("No daily food entries for this day.");
+                            return;
+                        }
+
+                        DisplayCurrentDayFoodEntries(entriesForDay);
+
+                        int choice = ReadNonNegativeInt("Enter food entry number to delete: ");
+
+                        if (choice < 1 || choice > entriesForDay.Count)
+                        {
+                            Console.WriteLine("Invalid food entry number.");
+                            return;
+                        }
+
+                        FoodEntry selectedEntry = entriesForDay[choice - 1];
+
+                        if (!Confirm($"Are you sure you want to delete '{selectedEntry.Name}'? (y/n): "))
+                        {
+                            Console.WriteLine("Delete canceled.");
+                            return;
+                        }
+
+                        int actualIndex = _dailyFoodEntryService.FoodEntries.IndexOf(selectedEntry);
+                        _dailyFoodEntryService.DeleteFoodEntry(actualIndex);
+
+                        Console.WriteLine("Food entry deleted.");
+                    }
+
+                    private void SaveGroceryListToFile(Dictionary<string, double> groceryTotals)
+                    {
+                        string filePath = "groceryList.txt";
+
+                        var lines = new List<string>
+                        {
+                            "GROCERY LIST",
+                            $"Generated on: {DateTime.Now}",
+                            ""
+                        };
+
+                        foreach (var item in groceryTotals.OrderBy(i => i.Key))
+                        {
+                            lines.Add($"{item.Key}: {item.Value}");
+                        }
+
+                        File.WriteAllLines(filePath, lines);
                     }
     }
 }
