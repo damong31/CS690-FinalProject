@@ -47,7 +47,7 @@ namespace MealPlannerApp
             IEnumerable<string> lines = Recipes.Select(recipe =>
             {
                 string ingredients = string.Join(",",
-                    recipe.Ingredients.Select(i => $"{i.Name}:{i.Quantity}"));
+                    recipe.Ingredients.Select(i => $"{i.Name}:{i.Quantity}:{i.Unit}"));
 
                 return $"{recipe.Name}|{recipe.Calories}|{recipe.Protein}|{recipe.Carbs}|{recipe.Fat}|{recipe.Category}|{ingredients}";
             });
@@ -106,9 +106,14 @@ namespace MealPlannerApp
             foreach (string item in rawIngredients.Split(',', StringSplitOptions.RemoveEmptyEntries))
             {
                 string[] parts = item.Split(':');
-                if (parts.Length == 2 && double.TryParse(parts[1], out double quantity))
+
+                if (parts.Length == 3 && double.TryParse(parts[1], out double quantity))
                 {
-                    ingredients.Add(new Ingredient(parts[0], quantity));
+                    ingredients.Add(new Ingredient(parts[0], quantity, parts[2]));
+                }
+                else if (parts.Length == 2 && double.TryParse(parts[1], out quantity))
+                {
+                    ingredients.Add(new Ingredient(parts[0], quantity, ""));
                 }
             }
 

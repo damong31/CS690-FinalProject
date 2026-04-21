@@ -1,3 +1,5 @@
 Oats|160|4|3|5|Lunch|
-popcorn|67|45|348|4|Snack|popcorn:1
-Cereal|100|13|12|10|Breakfast|Milk:1,Cereal:1
+popcorn|67|45|348|4|Snack|popcorn:1:
+Cereal|100|13|12|10|Breakfast|Milk:1:,Cereal:1:
+Protein Shake|1000|60|20|10|Snack|Milk:1:cup,Protein powder:2:grams
+Lemonade|100|10|10|10|Drink|Lemon:2:count,Water:1:cup
